@@ -2,9 +2,10 @@
   "name": "gc-signals",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "node --expose-gc test/test.js",
+    "postinstall": "tsc",
     "install": "node-gyp rebuild",
     "dev": "tsc -w"
   },
