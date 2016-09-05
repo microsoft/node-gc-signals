@@ -2,9 +2,6 @@
     "compilerOptions": {
         "module": "commonjs",
         "target": "es5",
-        "lib": [
-            "es2016"
-        ],
         "declaration": true,
         "noImplicitAny": false,
         "sourceMap": false
