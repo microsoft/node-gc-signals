@@ -1,11 +1,11 @@
 {
   "name": "gc-signals",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "node --expose-gc test/test.js",
-    "install": "node-gyp rebuild && tsc",
+    "install": "node-gyp rebuild",
     "dev": "tsc -w"
   },
   "author": "Microsoft Corporation",
