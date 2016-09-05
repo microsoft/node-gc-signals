@@ -1,0 +1,17 @@
+{
+  "name": "gc-signals",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --expose-gc test/test.js",
+    "install": "node-gyp rebuild && tsc",
+    "dev": "tsc -w"
+  },
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "gypfile": true,
+  "devDependencies": {
+    "typescript": "^2.1.0-dev.20160905"
+  }
+}
