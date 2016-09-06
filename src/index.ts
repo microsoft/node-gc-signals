@@ -26,6 +26,11 @@ const _emitter = new EventEmitter();
 export function consumeSignals(): number[] {
     const signals = Object.freeze(_gcsignals.consumeSignals());
     if (signals.length > 0) {
+        // remove form list of active ids
+        for (const id of signals) {
+            activeIds.delete(id);
+        }
+        // send event
         _emitter.emit('gc', signals);
     }
     return signals;
@@ -44,4 +49,21 @@ export function onDidGarbageCollectSignals(callback: (ids: number[]) => any): { 
             }
         }
     }
+}
+
+
+// --- util
+
+const activeSignals = new WeakMap<any, GCSignal>();
+const activeIds = new Set<number>();
+
+let idPool = 0;
+
+export function trackGarbageCollection(obj: any, id: number = idPool++): number {
+    if (activeIds.has(id)) {
+        ok(false, `object-id (${id}) in use`);
+    }
+    activeIds.add(id);
+    activeSignals.set(obj, new GCSignal(id));
+    return id;
 }
