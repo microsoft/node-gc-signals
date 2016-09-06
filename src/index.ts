@@ -36,6 +36,9 @@ export function consumeSignals(): number[] {
     return signals;
 }
 
+/**
+ * Get called when any call to `consumeSignals` yielded in a result.
+ */
 export function onDidGarbageCollectSignals(callback: (ids: number[]) => any): { dispose(): void } {
     ok(typeof callback === 'function');
 
@@ -57,7 +60,11 @@ export function onDidGarbageCollectSignals(callback: (ids: number[]) => any): { 
 const activeSignals = new WeakMap<any, GCSignal>();
 const activeIds = new Set<number>();
 
-
+/**
+ * Utility method to store a weak reference of an object
+ * along with an identifier. The id will be used to track
+ * garbage collection of the object.
+ */
 export function trackGarbageCollection(obj: any, id: number): number {
     ok(typeof obj === 'object', 'obj must be an object');
     ok(typeof id === 'number', 'id must be a number');
