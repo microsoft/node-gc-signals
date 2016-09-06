@@ -57,12 +57,12 @@ export function onDidGarbageCollectSignals(callback: (ids: number[]) => any): { 
 const activeSignals = new WeakMap<any, GCSignal>();
 const activeIds = new Set<number>();
 
-let idPool = 0;
 
-export function trackGarbageCollection(obj: any, id: number = idPool++): number {
-    if (activeIds.has(id)) {
-        ok(false, `object-id (${id}) in use`);
-    }
+export function trackGarbageCollection(obj: any, id: number): number {
+    ok(typeof obj === 'object', 'obj must be an object');
+    ok(typeof id === 'number', 'id must be a number');
+    ok(!activeIds.has(id), `object-id (${id}) in use`)
+
     activeIds.add(id);
     activeSignals.set(obj, new GCSignal(id));
     return id;
