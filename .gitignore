@@ -2,4 +2,4 @@
 build
 node_modules
 **/*.js
-src/*.d.ts
+**/*.d.ts

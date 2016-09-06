@@ -6,11 +6,13 @@
   "typings": "./src/index",
   "scripts": {
     "test": "node --expose-gc test/test.js",
-    "postinstall": "tsc",
     "install": "node-gyp rebuild",
     "dev": "tsc -w"
   },
   "author": "Microsoft Corporation",
   "license": "MIT",
-  "gypfile": true
+  "gypfile": true,
+  "devDependencies": {
+    "typescript": "^2.1.0-dev.20160906"
+  }
 }
