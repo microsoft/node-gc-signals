@@ -6,36 +6,33 @@
 'use strict';
 
 import * as assert from 'assert';
-import { config, onDidGarbageCollect } from '../src/index';
+import {GCSignal, consumeSignals} from '../src/index';
 
-
-config.interval = 50;
 assert.ok(typeof global.gc === 'function', 'start with --expose-gc');
 
-
 const garbage = new Set<number>();
+const total = 1000;
+let idPool = 0;
 
 function createItems() {
-    for (let i = 0; i < 500; i++) {
-        let thing = new class {
-            id = i;
-        };
-        onDidGarbageCollect(thing, function (id) {
-            assert.ok(typeof id === 'number');
-            assert.ok(!garbage.has(id));
-            garbage.add(id);
-        });
+    for (let i = 0; i < total; i++) {
+        new GCSignal(idPool++);
     }
 }
 
-setTimeout(createItems, 100 * Math.random());
-setTimeout(createItems, 200 * Math.random());
+setTimeout(createItems, Math.random() * 300);
+setTimeout(createItems, Math.random() * 600);
 
 let handle = setInterval(function () {
 
     global.gc();
+
+    for (const id of consumeSignals()) {
+        garbage.add(id);
+    }
     console.log('Collected Total', garbage.size);
-    if (garbage.size === 1000) {
+
+    if (garbage.size === 2 * total) {
         // console.log(collected);
         clearInterval(handle);
     }
