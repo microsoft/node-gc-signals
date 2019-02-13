@@ -16,7 +16,7 @@ export interface GCSignal { };
  * Create a new GC signal. When being garbage collected the passed
  * value is stored for later consumption.
  */
-export const GCSignal: { new (id: number): GCSignal } = _gcsignals.GCSignal;
+export const GCSignal: { new(id: number): GCSignal } = _gcsignals.GCSignal;
 
 const _emitter = new EventEmitter();
 
@@ -36,10 +36,13 @@ export function consumeSignals(): number[] {
     return signals;
 }
 
+type Callback = (ids: number[]) => any;
+
 /**
  * Get called when any call to `consumeSignals` yielded in a result.
  */
-export function onDidGarbageCollectSignals(callback: (ids: number[]) => any): { dispose(): void } {
+export function onDidGarbageCollectSignals(callbackIn: Callback): { dispose(): void } {
+    let callback: Callback | undefined = callbackIn;
     ok(typeof callback === 'function');
 
     _emitter.addListener('gc', callback);
@@ -48,7 +51,7 @@ export function onDidGarbageCollectSignals(callback: (ids: number[]) => any): { 
         dispose() {
             if (callback) {
                 _emitter.removeListener('gc', callback);
-                callback = null;
+                callback = undefined;
             }
         }
     }
