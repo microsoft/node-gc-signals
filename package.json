@@ -20,6 +20,7 @@
   "license": "MIT",
   "gypfile": true,
   "devDependencies": {
-    "typescript": "^2.1.0-dev.20160906"
+    "typescript": "^2.1.0-dev.20160906",
+    "@types/node": "^11.9.3"
   }
 }
