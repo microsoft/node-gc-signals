@@ -1,28 +1,23 @@
-// myobject.h
-#ifndef MYOBJECT_H
-#define MYOBJECT_H
+#ifndef SRC_GCSIGNAL_H
+#define SRC_GCSIGNAL_H
 
-#include <node.h>
-#include <vector>
-#include <node_object_wrap.h>
+#include <nan.h>
 
 namespace gcsignals {
 
-void ConsumeSignals(const v8::FunctionCallbackInfo<v8::Value>& args);
-
 class GCSignal : public node::ObjectWrap {
  public:
-  static void Init(v8::Local<v8::Object> exports);
+  static NAN_MODULE_INIT(Init);
 
  private:
   explicit GCSignal(double value);
   ~GCSignal();
 
-  static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static v8::Persistent<v8::Function> constructor;
+  static NAN_METHOD(New);
+  static Nan::Persistent<v8::Function> constructor;
   double value_;
 };
 
-}  // namespace demo
+}  // namespace gcsignals
 
-#endif
+#endif  // SRC_GCSIGNAL_H

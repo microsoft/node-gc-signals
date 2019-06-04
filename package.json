@@ -22,5 +22,8 @@
   "devDependencies": {
     "typescript": "^2.1.0-dev.20160906",
     "@types/node": "^11.9.3"
+  },
+  "dependencies": {
+    "nan": "^2.14.0"
   }
 }

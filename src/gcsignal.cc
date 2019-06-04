@@ -1,30 +1,12 @@
-// myobject.cc
 #include "gcsignal.h"
-#include <uv.h>
-#include <vector>
 
 namespace gcsignals {
 
-using v8::Context;
-using v8::Function;
-using v8::FunctionCallbackInfo;
-using v8::FunctionTemplate;
-using v8::Isolate;
-using v8::Local;
-using v8::Number;
-using v8::Array;
-using v8::Object;
-using v8::Persistent;
-using v8::String;
-using v8::Value;
-
 std::vector<double> signals;
 uv_mutex_t signals_lock;
+Nan::Persistent<v8::Function> GCSignal::constructor;
 
-Persistent<Function> GCSignal::constructor;
-
-GCSignal::GCSignal(double value) : value_(value) {
-}
+GCSignal::GCSignal(double value) : value_(value) {}
 
 GCSignal::~GCSignal() {
   uv_mutex_lock(&signals_lock);
@@ -32,65 +14,54 @@ GCSignal::~GCSignal() {
   uv_mutex_unlock(&signals_lock);
 }
 
-void GCSignal::Init(Local<Object> exports) {
-  Isolate* isolate = exports->GetIsolate();
-
-  // Prepare constructor template
-  Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New);
-  tpl->SetClassName(String::NewFromUtf8(isolate, "GCSignal"));
-  tpl->InstanceTemplate()->SetInternalFieldCount(1);
-
-  constructor.Reset(isolate, tpl->GetFunction());
-  exports->Set(String::NewFromUtf8(isolate, "GCSignal"), tpl->GetFunction());
-}
-
-void GCSignal::New(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = args.GetIsolate();
-
-  if (args.IsConstructCall()) {
-    // Invoked as constructor: `new GCSignal(...)`
-    double value = args[0]->IsUndefined() ? 0 : args[0]->NumberValue();
-    GCSignal* obj = new GCSignal(value);
-    obj->Wrap(args.This());
-    args.GetReturnValue().Set(args.This());
-
-  } else {
-    // Invoked as plain function `GCSignal(...)`, turn into construct call.
-    const int argc = 1;
-    Local<Value> argv[argc] = { args[0] };
-    Local<Context> context = isolate->GetCurrentContext();
-    Local<Function> cons = Local<Function>::New(isolate, constructor);
-    Local<Object> result = cons->NewInstance(context, argc, argv).ToLocalChecked();
-    args.GetReturnValue().Set(result);
-  }
-}
-
-void ConsumeSignals(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = args.GetIsolate();
-
+NAN_METHOD(ConsumeSignals) {
   uv_mutex_lock(&signals_lock);
 
-  int resultCount = (int)signals.size();
-  Local<Array> resultArr = Array::New(isolate, resultCount);
-  for (int index = 0; index < resultCount; index++) {
-    resultArr->Set(index, Number::New(isolate, signals[index]));
+  size_t resultCount = signals.size();
+  v8::Local<v8::Array> result = Nan::New<v8::Array>(resultCount);
+  for (size_t index = 0; index < resultCount; index++) {
+    Nan::Set(result, index, Nan::New<v8::Number>(signals[index]));
   }
 
-  args.GetReturnValue().Set(resultArr);
+  info.GetReturnValue().Set(result);
   signals.clear();
 
   uv_mutex_unlock(&signals_lock);
 }
 
-void InitAll(Local<v8::Object> exports) {
-
-  uv_mutex_init(&signals_lock);
-
-  NODE_SET_METHOD(exports, "consumeSignals", ConsumeSignals);
-
-  GCSignal::Init(exports);
+NAN_METHOD(GCSignal::New) {
+  if (info.IsConstructCall()) {
+    // Invoked as constructor: `new GCSignal(...)`
+    double value =
+        info[0]->IsUndefined() ? 0 : Nan::To<double>(info[0]).FromJust();
+    auto* obj = new GCSignal(value);
+    obj->Wrap(info.This());
+    info.GetReturnValue().Set(info.This());
+  } else {
+    // Invoked as plain function `GCSignal(...)`, turn into construct call.
+    const int argc = 1;
+    v8::Local<v8::Value> argv[argc] = {info[0]};
+    v8::Local<v8::Function> cons = Nan::New<v8::Function>(constructor);
+    info.GetReturnValue().Set(
+        Nan::NewInstance(cons, argc, argv).ToLocalChecked());
+  }
 }
 
-NODE_MODULE(addon, InitAll)
+NAN_MODULE_INIT(GCSignal::Init) {
+  uv_mutex_init(&signals_lock);
+
+  Nan::SetMethod(target, "consumeSignals", ConsumeSignals);
+
+  // Prepare constructor template
+  v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
+  tpl->SetClassName(Nan::New<v8::String>("GCSignal").ToLocalChecked());
+  tpl->InstanceTemplate()->SetInternalFieldCount(1);
+  v8::Local<v8::Function> function = Nan::GetFunction(tpl).ToLocalChecked();
+  constructor.Reset(function);
+  Nan::Set(target, Nan::New<v8::String>("GCSignal").ToLocalChecked(),
+      function);
+}
+
+NODE_MODULE(gcsignal, GCSignal::Init)
 
 }  // namespace gcsignals
